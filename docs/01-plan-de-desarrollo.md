@@ -10,7 +10,9 @@
 
 **Cuál es el hueco en Guatemala.** Los incumbentes reales no son apps de reserva sino sistemas de pago/acceso **cautivos**: Compass (BAC, sticker RFID prepagado, 250 mil+ usuarios y 125+ parqueos y peajes **(verificar)**), Vivepass (app + tag con membresía mensual, ~40 establecimientos, calificación 3.5/5 y quejas de soporte **(verificar)**) y Spectrum App/ID (solo en malls de Spectrum; la única "reserva" existente está en Miraflores). Nadie ofrece un **agregador neutral, multi-operador, con reserva garantizada y disponibilidad en tiempo real**, y segmentos completos están desatendidos: parqueos de superficie de zonas 1, 4, 9 y 10, hospitales, torres de oficinas, Antigua, eventos y aeropuerto.
 
-**Cómo ganamos dinero.** Tres fuentes, en este orden de importancia durante el primer año: (1) comisión sobre reservas y pases mensuales vendidos en la app (objetivo 15–20 % del GMV), (2) suscripción SaaS del operador por parqueo digitalizado (Q300–Q800/mes según tamaño, con un plan gratuito para parqueos pequeños que nos dan inventario), y (3) acuerdos B2B2C con bancos y empresas (parqueo como beneficio de tarjeta o de empleados; los bancos ya pagan por parqueo exclusivo en Oakland y Cayalá **(verificar)**).
+**Cómo ganamos dinero.** Tres fuentes, en este orden de importancia durante el primer año: (1) un **fee de reserva visible para el conductor (Q2–Q5)** más una **comisión al operador de 10–15 %** en segmentos premium (eventos, hospitales, aeropuerto, pases mensuales); el ticket cotidiano de Q10–Q15 no sostiene un porcentaje porque la pasarela cobra 4.5 % + Q1.20 por cobro con tarjeta **(verificar)**; (2) suscripción SaaS del operador por parqueo digitalizado (Q300–Q800/mes según tamaño, con un plan gratuito para parqueos pequeños que nos dan inventario); y (3) acuerdos B2B2C con bancos y empresas (parqueo como beneficio de tarjeta o de empleados; los bancos ya pagan por parqueo exclusivo en Oakland y Cayalá **(verificar)**). Nunca una membresía mensual obligatoria: es la queja central contra Vivepass.
+
+**Por dónde entramos.** No por el pago cotidiano de malls, donde el ticket es bajo y los incumbentes ya resolvieron "salir sin fila". Entramos por los segmentos donde **la certidumbre vale más que el tiempo** y el ticket es de Q20–Q100: eventos y noches en Cayalá, hospitales y edificios médicos (Q16/h), oficinas de Zona 10 y Zona 4 (abonos flexibles), Centro Histórico en eventos, Antigua en fines de semana, y el aeropuerto cuando se resuelva su operador.
 
 **Cuándo.** Fase 0 de validación y alianzas (6 semanas), MVP construido en 12 semanas, beta cerrada en Zona 10 y Zona 4 con 10–20 parqueos al mes 5, lanzamiento público al mes 6, y pases mensuales, eventos y aeropuerto entre los meses 6 y 9. Equipo núcleo: 2 desarrolladores full-stack, 1 diseñador a medio tiempo, 1 persona de alianzas/operaciones y el fundador como product owner.
 
@@ -26,7 +28,10 @@
 - **Para el operador:** "Digitalizá tu parqueo en una tarde, sin comprar barreras. Cobro con tarjeta y QR, facturación FEL automática, control de guardias y reporte diario. Y además te llevamos clientes."
 - **Diferenciación frente a Compass/Vivepass/Spectrum:** neutral (cualquier banco, cualquier operador), sin sticker ni membresía obligatoria, con reserva garantizada y disponibilidad real; frente a Parkeyo: inventario comercial real y operación profesional, no espacios de particulares.
 
-### 1.3 Principios de producto
+### 1.3 Cuña de entrada (wedge)
+La investigación muestra que nadie en Guatemala vende *certidumbre*: saber dónde hay lugar y asegurarlo antes de llegar. La cuña son los casos donde esa certidumbre tiene valor evidente y el ticket soporta un fee: (1) **eventos y conciertos en Ciudad Cayalá** (3,600+ espacios, tarifa nocturna Q20, bancos que ya pagan zonas exclusivas), (2) **hospitales y edificios médicos** (pacientes con cita, ~Q16/h), (3) **oficinistas de Zona 10 y Zona 4** con abonos flexibles sobre inventario que hoy se renta por clasificados a Q700–USD 112/mes, (4) **Centro Histórico en eventos** (Noche de los Museos, Semana Santa, con parqueos municipales fuera de calle), (5) **Antigua en fines de semana** y (6) **La Aurora** cuando la DGAC resuelva al operador. El parqueo cotidiano de malls llega después, como canal de demanda sobre los rieles de pago que ya existen (Compass, Vivepass, Spectrum ID), no contra ellos.
+
+### 1.4 Principios de producto
 1. **Android-first, iOS día uno.** 72 % Android / 28 % iOS en Guatemala (StatCounter nov-2025 **(verificar)**), pero el segmento de Zona 10 y 14 es intensivo en iPhone.
 2. **Hardware-light.** Cada parqueo debe poder operar con un teléfono en la garita. Las barreras, LPR e integraciones con sistemas existentes vienen después y por capas (ver `02-arquitectura-tecnica.md`).
 3. **Nunca fallar en la barrera.** La investigación regional muestra que la confianza se pierde cuando la app no abre el paso. Redención offline-tolerante, código de respaldo de 6 dígitos, teléfono de soporte visible.
@@ -42,7 +47,7 @@
 |---|---|---|---|
 | Conductor urbano frecuente (Z4, Z9, Z10, Z14, Z15; oficinas, clínicas, restaurantes) | Dar vueltas, cobros "sorpresa" (Q50 reducibles a Q10 con consumo), efectivo, tickets perdidos | Reserva garantizada, precio claro, pago con tarjeta/QR, recibo FEL | **MVP** |
 | Trabajador de oficina / residente sin parqueo | Mensualidad informal, sin recibo, sin flexibilidad | Pases mensuales digitales, cambio de parqueo, factura | Fase 2 |
-| Asistente a eventos (Cayalá, estadios, conciertos, ferias) | Caos, sobreprecio, inseguridad | Reserva anticipada por evento, mapa de acceso | Fase 2 |
+| Asistente a eventos (Cayalá, estadios, conciertos, ferias) | Caos, sobreprecio, inseguridad | Reserva anticipada por evento, mapa de acceso | **MVP (modo evento básico)** → Fase 2 completo |
 | Viajero (La Aurora) | Precio opaco, situación legal del operador inestable **(verificar)** | Reserva por días, shuttle/valet de terceros | Fase 2–3 |
 | Turista en Antigua / Xela | Marbete municipal confuso, parqueos privados dispersos | Buscador + pago por día | Fase 3 |
 | **Operador pequeño/mediano** (superficie, torre de oficinas, hospital, iglesia, colegio con parqueo ocioso) | Efectivo y fuga, guardias sin control, sin datos, sin FEL | App de garita + portal, cobro digital, facturación, clientes nuevos | **MVP (lado oferta)** |
@@ -54,7 +59,7 @@
 ## 3. Estrategia de oferta (el lado difícil)
 
 ### 3.1 Secuencia de adquisición de parqueos
-1. **Semanas 0–6 (Fase 0):** visitar 40–60 parqueos de superficie y torres en Zona 10 (Zona Viva, Plaza Fontabella, alrededores de hospitales Herrera Llerandi y Centro Médico), Zona 4 (4 Grados Norte, Campus Tec, Vivo Z4), Zona 9/13 (Avenida Reforma, aeropuerto) y Zona 1 (Centro Histórico). Objetivo: **15 cartas de intención** y 10 parqueos piloto que acepten operar con nuestra app de garita a cambio de SaaS gratis durante 6 meses.
+1. **Semanas 0–6 (Fase 0):** visitar 40–60 parqueos de superficie y torres en Zona 10 (Zona Viva, Plaza Fontabella, alrededores de hospitales Herrera Llerandi y Centro Médico), Zona 4 (4 Grados Norte, Campus Tec, Vivo Z4), Zona 9/13 (Avenida Reforma, aeropuerto) y Zona 1 (Centro Histórico). Objetivo: **15 cartas de intención** y 10 parqueos piloto que acepten operar con nuestra app de garita a cambio de SaaS gratis durante 6 meses. En paralelo, abrir las dos conversaciones ancla: **Grupo Cayalá** (reserva para eventos y nocturna encima de sus rieles de pago actuales) y **Metroproyectos** (alianza integral de reserva, pago y validación de comercios en 1–2 malls, pues no tiene capa digital visible **(verificar)**).
 2. **Mes 5–6 (beta):** 10–20 parqueos vivos, 1,000–2,000 espacios. Densidad antes que cobertura: que en Zona 10 y Zona 4 siempre haya una opción a menos de 300 m.
 3. **Mes 6–9:** hospitales privados, universidades (UFM, Landívar, UVG, Galileo), hoteles con parqueo ocioso de día, iglesias y colegios para eventos. Primer acuerdo con un grupo ancla (ver 3.2).
 4. **Mes 9–12:** Antigua Guatemala (parqueos privados; coordinar con el modelo municipal MarbEx), Xela, Carretera a El Salvador. Integración con el PARCS del grupo ancla.
@@ -72,7 +77,7 @@
 | **Integradores de barreras** (DIPSA e ISS para CAME/Parkare, Systeco para ZKTeco, Inalarm, Cloud Parking) | Son quienes tocan el hardware de los malls | Acuerdo de integración y referidos: ellos instalan, nosotros somos el software de reserva/pago | Media (Fase 2–3) |
 
 ### 3.3 Oferta comercial al operador
-- **Plan Gratis:** app de garita, cobro con tarjeta/QR (comisión de pasarela + 5 % para nosotros), reporte diario, FEL. Para parqueos de hasta 60 espacios. A cambio: inventario reservable en la app.
+- **Plan Gratis:** app de garita, cobro digital con tarjeta/QR al costo de pasarela (sin comisión nuestra en el drive-up), reporte diario, FEL. Para parqueos de hasta 60 espacios. A cambio: inventario reservable en la app; nosotros ganamos el fee de reserva del conductor y 10 % sobre las reservas.
 - **Plan Pro (Q300–Q800/mes):** varios guardias, pases mensuales, tarifas por horario, validaciones de comercios, cierre de caja, exportación contable, LPR opcional.
 - **Plan Enterprise (grupos):** integración con PARCS existente, API, reporte consolidado, SLA.
 - **Pagos al operador:** liquidación semanal por transferencia ACH, con estado de cuenta descargable; retención de comisión en origen.
@@ -100,8 +105,12 @@ Leyenda: ✅ MVP (mes 5) · 🔜 Fase 2 (meses 6–9) · 🔭 Fase 3 (meses 9–
 | Soporte: chat por WhatsApp y teléfono visible en el pase | ✅ | ✅ | | ✅ |
 | Cierre de caja, reporte diario, liquidación semanal | | ✅ | ✅ | ✅ |
 | Multi-vehículo y favoritos | ✅ | | | ✅ |
+| Checkout web sin app (link desde el QR del rótulo o por WhatsApp) para pagar una sesión o reserva | ✅ | | | ✅ |
+| Fee de reserva visible en el desglose; cobro agrupado de sesiones pequeñas con tarjeta tokenizada | ✅ | | | ✅ |
+| Modo evento básico: tarifa y cupos especiales por fecha | ✅ | ✅ | ✅ | ✅ |
 | Pases mensuales / nocturnos / fin de semana, renovables | ✅ | ✅ | ✅ | 🔜 |
-| Eventos: inventario y precio por evento, mapa de acceso | ✅ | ✅ | ✅ | 🔜 |
+| Eventos completos: inventario masivo, mapa de acceso, venta anticipada con el organizador | ✅ | ✅ | ✅ | 🔜 |
+| Crédito prepagado de uso exclusivo (Q75–Q150), no retirable, sujeto a opinión legal | ✅ | | | 🔜 |
 | Aeropuerto: reserva por días | ✅ | ✅ | ✅ | 🔜 |
 | Apple Pay / Google Pay | ✅ | | | 🔜 |
 | Promociones, códigos, referidos, validación de comercios | ✅ | ✅ | ✅ | 🔜 |
@@ -116,7 +125,7 @@ Leyenda: ✅ MVP (mes 5) · 🔜 Fase 2 (meses 6–9) · 🔭 Fase 3 (meses 9–
 | Valet on-demand, EV charging | — | — | — | — |
 
 ### 4.2 Qué NO hace el MVP (deliberadamente)
-- No custodia saldo de usuarios (no hay "billetera" con dinero general). Hay cobro por sesión con tarjeta guardada y, después, pases prepagados para un servicio concreto. Motivo: no existe ley de dinero electrónico vigente y el anteproyecto exigiría una S.A. de objeto único autorizada por la Junta Monetaria **(verificar con abogado)**.
+- No custodia saldo de usuarios (no hay "billetera" con dinero general). Hay cobro con tarjeta tokenizada (al confirmar en reservas; agrupado para sesiones pequeñas), transferencia/QR bancario y pago en sitio conciliado. El crédito prepagado de uso exclusivo y los pases llegan en Fase 2 con opinión legal. Motivo: no existe ley de dinero electrónico vigente y el anteproyecto exigiría una S.A. de objeto único autorizada por la Junta Monetaria **(verificar con abogado)**.
 - No integra barreras ni LPR. Todo corre con el teléfono del guardia.
 - No cubre vía pública ni parquímetros.
 - No tiene P2P de espacios de particulares (eso es Parkeyo; densidad insuficiente).
@@ -138,16 +147,18 @@ Malls Q5–Q15/h o tarifas planas Q10–Q20 (Cayalá Q15 hasta 4 h; Miraflores h
 ### 5.2 Costos de pasarela **(verificar tarifas vigentes)**
 Recurrente 4.5 % + Q1.20 + IVA; Tilopay 4.25 % + US$0.35; VisaNet/Cybersource ~3.5 %; BAC Compra Click 3.5–5 % + mensualidad; transferencia/ACH vía Recurrente 1 % (máx. Q20).
 
-### 5.3 Economía por transacción (ilustrativa)
-| Producto | Ticket | Costo pasarela | Nuestra comisión | Margen neto por transacción |
-|---|---|---|---|---|
-| Sesión suelta | Q15 | ~Q1.90 (12.5 %) | 20 % = Q3.00 | **~Q1.10** |
-| Sesión suelta | Q30 | ~Q2.55 (8.5 %) | 20 % = Q6.00 | ~Q3.45 |
-| Pase mensual | Q450 | ~Q21.50 (4.8 %) | 15 % = Q67.50 | ~Q46 |
-| Reserva de evento | Q60 | ~Q3.90 (6.5 %) | 20 % = Q12.00 | ~Q8.10 |
-| SaaS Pro (por parqueo) | Q500/mes | ~Q6 (ACH) | 100 % | ~Q494 |
+### 5.3 Economía por transacción (ilustrativa, con pasarela a 4.5 % + Q1.20)
+| Producto | Tarifa del parqueo | Fee al conductor | Comisión al operador | Cobro total | Costo pasarela | Ingreso neto nuestro |
+|---|---|---|---|---|---|---|
+| Sesión drive-up cotidiana, cobro individual | Q15 | Q0 | 0 % (Plan Gratis) | Q15 | ~Q1.90 (12.5 %) | **Q0** (solo digitalizamos; la pasarela la paga el operador) |
+| 4 sesiones de Q15 agrupadas en un cobro semanal | Q60 | Q0 | 0 % | Q60 | ~Q3.90 (6.5 %) | Q0, pero el operador paga la mitad de comisión fija |
+| Reserva en hospital/oficina | Q30 | Q3 | 10 % = Q3.00 | Q33 | ~Q2.70 | **~Q3.30** |
+| Reserva de evento en Cayalá | Q60 | Q5 | 15 % = Q9.00 | Q65 | ~Q4.10 | **~Q9.90** |
+| Reserva aeropuerto (3 días) | Q100 | Q5 | 15 % = Q15.00 | Q105 | ~Q5.90 | **~Q14.10** |
+| Pase mensual oficinista | Q450 | Q0 | 15 % = Q67.50 | Q450 | ~Q21.50 (o ~Q4.50 por ACH) | **~Q46–63** |
+| SaaS Pro (por parqueo) | — | — | — | Q500/mes | ~Q5 (ACH) | **~Q495** |
 
-**Conclusión:** la sesión suelta de Q15 apenas cubre costos; el negocio se sostiene con pases mensuales, eventos, tickets altos (aeropuerto, hospitales) y SaaS. Por eso el MVP debe estar diseñado para vender pases desde la Fase 2 y para que el operador pague por valor operativo, no solo por demanda. Optimizaciones a evaluar: cobro agregado semanal de sesiones pequeñas con tarjeta guardada (reduce el fijo de Q1.20 por transacción), negociar tarifa por volumen con la pasarela, y pago con QR Cuik/ACH que no tiene fijo.
+**Conclusión:** la sesión cotidiana de Q10–Q15 no soporta un porcentaje nuestro (la pasarela ya se lleva 12–16 %); la digitalizamos al costo para ganar inventario y datos, y agrupamos cobros pequeños para abaratar el fijo. El dinero está en reservas premium con fee visible, eventos, aeropuerto, pases y SaaS, más el canal B2B2C con bancos. Palancas adicionales: negociar tarifa por volumen con la pasarela, empujar transferencia/QR bancario (1 % con tope Q20, sin fijo **(verificar)**) y, con opinión legal, crédito prepagado de uso exclusivo en montos de Q75–Q150.
 
 ### 5.4 Metas financieras orientativas (12 meses)
 - Mes 6: 15 parqueos, 1,500 espacios, 1,200 reservas/mes, GMV ~Q30 mil/mes.
@@ -160,11 +171,11 @@ Recurrente 4.5 % + Q1.20 + IVA; Tilopay 4.25 % + US$0.35; VisaNet/Cybersource ~3
 
 | Fase | Semanas | Entregables | Criterio de salida |
 |---|---|---|---|
-| **0. Validación y alianzas** | 1–6 | 20 entrevistas a operadores y 50 a conductores; 15 cartas de intención; S.A. constituida; cuentas (Recurrente, FEL, Google Maps, Apple/Google developer, WhatsApp API); marca y prototipo Figma probado con 10 usuarios; backlog priorizado | ≥ 10 parqueos piloto confirmados en Z10/Z4 |
-| **1. MVP** | 7–18 | Backend, app conductor (Android + iOS), modo garita, portal operador mínimo, FEL, WhatsApp, panel admin, analítica básica | Demo end-to-end real en 3 parqueos con dinero real |
+| **0. Validación y alianzas** | 1–6 | 20 entrevistas a operadores y 50 a conductores; 15 cartas de intención; primeras reuniones con Grupo Cayalá y Metroproyectos; S.A. constituida; opinión legal (fiscal y pagos); cuentas (Recurrente, FEL, Google Maps, Apple/Google developer, WhatsApp API); marca y prototipo Figma probado con 10 usuarios; backlog priorizado | ≥ 10 parqueos piloto confirmados en Z10/Z4 (incluido al menos 1 hospital o edificio médico) |
+| **1. MVP** | 7–18 | Backend, app conductor (Android + iOS), checkout web sin app, modo garita, portal operador mínimo con modo evento básico, FEL, WhatsApp, panel admin, analítica básica | Demo end-to-end real en 3 parqueos con dinero real |
 | **2. Beta cerrada** | 19–22 | 10–20 parqueos vivos; 300 usuarios invitados (oficinas de Z10/Z4); soporte 7 días; corrección de fallas en garita | Tasa de fallo en garita < 2 %; NPS operador ≥ 40; repetición a 30 días ≥ 35 % |
 | **3. Lanzamiento público** | 23–26 | Tiendas públicas, campaña digital geolocalizada, alianzas con 3 empresas de Z10 | 1,000 reservas/mes |
-| **4. Fase 2** | 27–40 | Pases mensuales, eventos, aeropuerto (parqueos privados Z13), Apple/Google Pay, promociones, cuentas empresa, piloto LPR en 2 parqueos | 300 pases activos; primer contrato B2B2C |
+| **4. Fase 2** | 27–40 | Pases mensuales, eventos completos (primer evento grande con Cayalá u organizador), crédito prepagado de uso exclusivo, aeropuerto (parqueos privados Z13), Apple/Google Pay, promociones, validación de comercios, cuentas empresa, piloto LPR en 2 parqueos | 300 pases activos; primer contrato B2B2C; primer evento con > 500 reservas |
 | **5. Fase 3** | 41–52 | Integración PARCS con grupo ancla, API, Waze/Google, Antigua y Xela, tarifas por reglas | Grupo ancla en producción; 60 parqueos |
 | **6. Fase 4** | año 2 | LPR a escala, precios dinámicos, white-label, El Salvador/Honduras | Decidir con datos |
 
@@ -229,7 +240,9 @@ Nómina Q600–900 mil + herramientas ~Q60–120 mil + legal/constitución Q15�
 | **Iniciativa de ley de parqueos 2026** (1.ª hora gratis, tope Q5/h y Q30/día, responsabilidad civil directa, seguro obligatorio) **(verificar estado)** | Media | Alto en GMV de sesiones sueltas | Pesar el modelo hacia SaaS, pases y eventos; la presión regulatoria aumenta la necesidad de eficiencia del operador, que es lo que vendemos |
 | Regulación de dinero electrónico / fintech | Media | Alto si custodiamos saldo | No custodiar saldo; opinión legal antes de lanzar pases prepagados; estructura de pagos "pass-through" con la pasarela |
 | Reacción de incumbentes (BAC/Compass, Vivepass, Spectrum) | Media | Medio | Neutralidad como ventaja; buscar a los bancos como socios (beneficios de tarjeta), no como enemigos; no competir en pago interno de Spectrum |
-| Entrada de Kigo (México) u otro jugador regional **(verificar)** | Baja-media | Medio | Velocidad en firmar exclusividades blandas con operadores pequeños; densidad local |
+| **Uber activa la experiencia SpotHero en Guatemala** (compró SpotHero en 2026 por USD 617 M y tiene ~1.1 M usuarios semanales en el país **(verificar)**) | Baja-media | Alto | Cerrar inventario de eventos (Cayalá) y un grupo de malls (Metroproyectos) con exclusividad blanda antes de que llegue un agregador con marca; ser el socio local natural si entra |
+| Entrada de Kigo (México) vía licitación municipal u otro jugador regional **(verificar)** | Baja-media | Medio | Velocidad en firmar exclusividades blandas con operadores pequeños; densidad local |
+| Spectrum extiende "Parqueo Reservado" de Miraflores a sus 4 malls | Media | Medio | Tener Cayalá, Metroproyectos y hospitales cerrados antes; ofrecerle a Spectrum eventos y validación encima de Spectrum ID |
 | Operadores no adoptan (desconfianza, informalidad fiscal) | Alta | Alto | Plan gratis, FEL como argumento, cobro en efectivo registrado como transición, visitas presenciales y capacitación de guardias |
 | Fallo en garita destruye confianza | Media | Alto | Modo offline, código de respaldo, soporte telefónico, SLA de respuesta < 2 min en horas pico |
 | Fraude y no-shows | Media | Medio | Tarjeta tokenizada, cargo en reserva, política de cancelación clara, lista negra de placas |
@@ -241,11 +254,12 @@ Nómina Q600–900 mil + herramientas ~Q60–120 mil + legal/constitución Q15�
 ---
 
 ## 11. Decisiones abiertas (requieren al fundador)
-Ver `03-accesos-y-decisiones-pendientes.md`. Las tres más urgentes: (1) estructura societaria (S.A. en Guatemala sola vs. holding en EE. UU. que habilita Stripe e inversión extranjera), (2) nombre y marca, (3) zona y lista de los 10 primeros parqueos piloto.
+Ver `03-accesos-y-decisiones-pendientes.md`. Las cuatro más urgentes: (1) estructura societaria (S.A. en Guatemala sola vs. holding en EE. UU. que habilita Stripe e inversión extranjera), (2) **arquitectura fiscal**: si la plataforma factura el 100 % del parqueo (asume IVA e ISR sobre todo el flujo) o solo su fee y comisión mientras cada operador factura el servicio con su propio NIT y FEL (recomendado; filtra a los lotes informales pero protege el margen), (3) nombre y marca, (4) zona y lista de los 10 primeros parqueos piloto.
 
 ## 12. Próximos pasos inmediatos (2 semanas)
-1. Confirmar personalmente la ficha de Parkeyo en Play Store/App Store y su lista de parqueos; probar Vivepass y Compass como usuario (la investigación no pudo acceder a las tiendas).
-2. Visitar 15 parqueos en Zona 10 y Zona 4 con un guion de entrevista; anotar sistema actual, tarifas, dueño, disposición a piloto.
-3. Iniciar constitución de la S.A. y abrir cuenta bancaria; solicitar afiliación en Recurrente y una alternativa.
-4. Crear cuentas de Apple Developer, Google Play Console, Google Cloud (Maps), Meta Business (WhatsApp), certificador FEL (Infile o Digifact).
-5. Aprobar el stack técnico de `02-arquitectura-tecnica.md` y arrancar el esqueleto del monorepo.
+1. Confirmar personalmente la ficha de Parkeyo en Play Store/App Store y su lista de parqueos; probar Vivepass, Compass y Spectrum ID como usuario (la investigación no pudo acceder a las tiendas).
+2. Pedir reunión exploratoria con Grupo Cayalá (gerencia de operaciones / eventos) y con Metroproyectos (organigrama público en The Org; sin contactos verificados en la investigación).
+3. Visitar 15 parqueos en Zona 10 y Zona 4 con un guion de entrevista; anotar sistema actual, tarifas, dueño, disposición a piloto.
+4. Iniciar constitución de la S.A. y abrir cuenta bancaria; solicitar afiliación en Recurrente y una alternativa; opinión legal sobre arquitectura fiscal y crédito prepagado.
+5. Crear cuentas de Apple Developer, Google Play Console, Google Cloud (Maps), Meta Business (WhatsApp), certificador FEL (Infile o Digifact).
+6. Aprobar el stack técnico de `02-arquitectura-tecnica.md` y arrancar el esqueleto del monorepo.

@@ -14,6 +14,8 @@
 | D6 | Certificador FEL | Infile vs. Digifact vs. Megaprint | Infile o Digifact (ambos con API); pedir cotización | Fase 0 |
 | D7 | Stack técnico | Según `02-arquitectura-tecnica.md` | Aprobar o ajustar | Antes de S1 |
 | D8 | Contratación | 1 senior + 1 mid vs. 2 mid | 1 senior + 1 mid | Fase 0 |
+| D9 | **Arquitectura fiscal** | (a) la plataforma factura el 100 % del parqueo y paga al operador; (b) cada operador factura el parqueo con su NIT y FEL (emitimos por él) y la plataforma factura solo fee, comisión y SaaS | (b): protege el margen y limita IVA/ISR y exposición ante DIACO al flujo propio; exige operadores con NIT activo. Confirmar con contador | Fase 0 |
+| D10 | Cobro de sesiones pequeñas | Cobrar cada sesión con tarjeta vs. agrupar sesiones < Q20 en un cargo semanal vs. crédito prepagado de uso exclusivo | Agrupar en el MVP; crédito prepagado en Fase 2 con opinión legal (ley de dinero electrónico en anteproyecto) | Fase 0 |
 
 ## 2. Cuentas y servicios que debe crear el fundador (a nombre de la empresa)
 
@@ -42,7 +44,8 @@ Regla: nunca pegar llaves en el chat ni en el repo; usar el gestor de secretos d
 2. Probar Vivepass y Compass como usuario y anotar la experiencia de alta, costos y fallas.
 3. Visitar 15–20 parqueos en Zona 10 y Zona 4 con el guion de entrevista (lo preparo en `docs/` cuando se apruebe este plan): dueño/administrador, sistema actual, tarifas, ocupación por hora, disposición a piloto.
 4. Reunión exploratoria con un integrador de barreras (DIPSA o ISS para CAME/Parkare; Systeco para ZKTeco) para entender qué integración es posible.
-5. Consulta legal (1–2 horas) sobre: pases prepagados vs. dinero electrónico, responsabilidad por daños en parqueos aliados, términos y condiciones, y la iniciativa de ley de parqueos 2026.
+5. Pedir reunión con Grupo Cayalá (eventos y nocturno) y con Metroproyectos (alianza integral): son las dos anclas de primer anillo según la investigación y no hay contactos verificados públicamente.
+6. Consulta legal y contable (2–3 horas) sobre: arquitectura fiscal (D9), crédito prepagado vs. dinero electrónico (D10), responsabilidad por daños en parqueos aliados, términos y condiciones, política de privacidad sin ley de datos vigente, y la iniciativa de ley de parqueos 2026.
 
 ## 4. Qué puedo hacer yo sin accesos adicionales
 - Esqueleto del monorepo, modelo de datos, motor de tarifas con tests, API con pasarela y FEL simuladas, apps con mapa en modo desarrollo (con una API key de Maps provisional) y toda la lógica de reservas, redención offline y liquidaciones.
