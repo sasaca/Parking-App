@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies / builds (para cuando exista código)
+node_modules/
+dist/
+build/
+coverage/
