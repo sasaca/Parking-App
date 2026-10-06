@@ -1,0 +1,708 @@
+// Esquema de datos de la plataforma. Es el CONTRATO entre módulos: cambios requieren actualizar
+// packages/shared/src/enums.ts y docs/04-contratos.md. Sin PostGIS: búsqueda geo con lat/lng + haversine.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Enums (sincronizar con @parkgt/shared)
+// ----------------------------------------------------------------------------
+
+enum VehicleType {
+  AUTO
+  MOTO
+  PICKUP
+}
+
+enum OperatorRole {
+  OWNER
+  ADMIN
+  GUARD
+}
+
+enum PlatformRole {
+  USER
+  PLATFORM_ADMIN
+}
+
+enum OperatorPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum FacilityStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+}
+
+enum HardwareLevel {
+  L0_GARITA
+  L1_QR_FIJO
+  L2_LPR
+  L3_PARCS
+}
+
+enum RateRuleType {
+  HOURLY
+  FLAT_WINDOW
+  DAILY
+  OVERNIGHT
+  EVENT
+}
+
+enum ReservationStatus {
+  QUOTED
+  PENDING_PAYMENT
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  EXPIRED
+  CANCELLED
+  NO_SHOW
+  REFUNDED_NO_SPACE
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+  VOIDED
+}
+
+enum SessionSource {
+  RESERVATION
+  DRIVE_UP
+  LPR
+  WEB_CHECKOUT
+}
+
+enum GateEventType {
+  CHECK_IN
+  CHECK_OUT
+  DENIED
+  NO_SPACE
+}
+
+enum GateMethod {
+  QR
+  CODE
+  PLATE
+  LPR
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethodType {
+  CARD
+  BANK_QR
+  BANK_TRANSFER
+  CASH
+}
+
+enum RefundReason {
+  CANCELLATION
+  NO_SPACE
+  SUPPORT
+  OTHER
+}
+
+enum InvoiceIssuer {
+  OPERATOR
+  PLATFORM
+}
+
+enum InvoiceStatus {
+  PENDING
+  ISSUED
+  FAILED
+  VOIDED
+}
+
+enum LedgerAccount {
+  OPERATOR_PAYABLE
+  PLATFORM_REVENUE
+  GATEWAY_FEES
+  TAX_IVA
+  CUSTOMER_RECEIVABLE
+  CASH_AT_FACILITY
+}
+
+enum PayoutStatus {
+  DRAFT
+  PENDING
+  PAID
+  FAILED
+}
+
+enum ChargeGroupStatus {
+  OPEN
+  CHARGING
+  CHARGED
+  FAILED
+}
+
+enum NotificationChannel {
+  WHATSAPP
+  PUSH
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ----------------------------------------------------------------------------
+// Identidad
+// ----------------------------------------------------------------------------
+
+model User {
+  id           String       @id @default(cuid())
+  firebaseUid  String?      @unique
+  phone        String?      @unique
+  email        String?      @unique
+  name         String?
+  nit          String?
+  locale       String       @default("es-GT")
+  platformRole PlatformRole @default(USER)
+  isBlocked    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  vehicles       Vehicle[]
+  paymentMethods PaymentMethod[]
+  reservations   Reservation[]
+  sessions       ParkingSession[]
+  operatorRoles  OperatorUser[]
+  chargeGroups   ChargeGroup[]
+  payments       Payment[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+}
+
+model Vehicle {
+  id        String      @id @default(cuid())
+  userId    String
+  /// Placa normalizada (mayúsculas, sin espacios): "P123ABC".
+  plate     String
+  type      VehicleType @default(AUTO)
+  color     String?
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@unique([userId, plate])
+  @@index([plate])
+}
+
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  userId    String
+  provider  String
+  /// Token de la pasarela. Nunca se almacena el PAN.
+  token     String
+  brand     String?
+  last4     String?
+  expMonth  Int?
+  expYear   Int?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// Operadores y parqueos
+// ----------------------------------------------------------------------------
+
+model OperatorAccount {
+  id                     String       @id @default(cuid())
+  legalName              String
+  tradeName              String
+  nit                    String
+  taxRegime              String?
+  plan                   OperatorPlan @default(FREE)
+  /// Comisión sobre reservas en puntos básicos (1000 = 10 %).
+  commissionBps          Int          @default(1000)
+  /// Fee de reserva que paga el conductor, en centavos (300 = Q3).
+  reservationFeeCentavos Int          @default(300)
+  /// Cifrados con DATA_ENCRYPTION_KEY (AES-256-GCM, base64).
+  bankAccountEnc         String?
+  felCredentialsEnc      String?
+  felEnabled             Boolean      @default(false)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  users      OperatorUser[]
+  facilities Facility[]
+  payouts    Payout[]
+  invoices   Invoice[]
+  ledger     LedgerEntry[]
+}
+
+model OperatorUser {
+  id         String       @id @default(cuid())
+  operatorId String
+  userId     String
+  role       OperatorRole
+  createdAt  DateTime     @default(now())
+
+  operator OperatorAccount @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  devices  Device[]
+
+  @@unique([operatorId, userId])
+}
+
+model Facility {
+  id                  String         @id @default(cuid())
+  operatorId          String
+  name                String
+  slug                String         @unique
+  description         String?
+  lat                 Float
+  lng                 Float
+  address             String
+  zone                String?
+  city                String         @default("Guatemala")
+  photos              String[]       @default([])
+  accessInstructions  String?
+  /// WeeklyHours (ver @parkgt/shared weeklyHoursSchema).
+  hours               Json
+  totalCapacity       Int
+  reservableCapacity  Int
+  amenities           String[]       @default([])
+  hardwareLevel       HardwareLevel  @default(L0_GARITA)
+  status              FacilityStatus @default(DRAFT)
+  timezone            String         @default("America/Guatemala")
+  supportPhone        String?
+  /// Señal manual del guardia: lleno / disponible.
+  manualFullSince     DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  operator     OperatorAccount   @relation(fields: [operatorId], references: [id])
+  ratePlans    RatePlan[]
+  events       Event[]
+  buckets      InventoryBucket[]
+  reservations Reservation[]
+  sessions     ParkingSession[]
+  gateEvents   GateEvent[]
+  devices      Device[]
+  payments     Payment[]
+
+  @@index([lat, lng])
+  @@index([operatorId])
+  @@index([status])
+}
+
+model RatePlan {
+  id               String   @id @default(cuid())
+  facilityId       String
+  name             String
+  isDefault        Boolean  @default(true)
+  graceMinutes     Int      @default(10)
+  roundingMinutes  Int      @default(30)
+  dailyMaxCentavos Int?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  facility Facility   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  rules    RateRule[]
+
+  @@index([facilityId, active])
+}
+
+model RateRule {
+  id           String        @id @default(cuid())
+  ratePlanId   String
+  type         RateRuleType
+  priority     Int           @default(0)
+  vehicleTypes VehicleType[]
+  /// RateRuleParams (ver @parkgt/shared rateRuleParamsSchema). Montos en centavos, IVA incluido.
+  params       Json
+
+  ratePlan RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id                      String   @id @default(cuid())
+  facilityId              String
+  name                    String
+  startsAt                DateTime
+  endsAt                  DateTime
+  priceCentavos           Int
+  extraReservableCapacity Int      @default(0)
+  active                  Boolean  @default(true)
+  createdAt               DateTime @default(now())
+
+  facility     Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([facilityId, startsAt])
+}
+
+/// Un registro por parqueo y slot de 15 minutos; se materializa bajo demanda.
+model InventoryBucket {
+  id                 String   @id @default(cuid())
+  facilityId         String
+  slotStart          DateTime
+  reservableCapacity Int
+  reserved           Int      @default(0)
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([facilityId, slotStart])
+}
+
+// ----------------------------------------------------------------------------
+// Reservas y sesiones
+// ----------------------------------------------------------------------------
+
+model Reservation {
+  id              String            @id @default(cuid())
+  userId          String?
+  facilityId      String
+  vehicleId       String?
+  eventId         String?
+  plate           String
+  vehicleType     VehicleType       @default(AUTO)
+  startsAt        DateTime
+  endsAt          DateTime
+  status          ReservationStatus @default(PENDING_PAYMENT)
+  parkingCentavos Int
+  feeCentavos     Int
+  ivaCentavos     Int
+  totalCentavos   Int
+  /// MoneyLine[] y metadatos de la cotización.
+  breakdown       Json
+  code6           String
+  /// Secreto para derivar el QR; nunca se expone.
+  qrSecret        String
+  /// Fecha límite de pago para PENDING_PAYMENT.
+  paymentDueAt    DateTime?
+  checkedInAt     DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  /// Teléfono de contacto para reservas de checkout web sin cuenta.
+  contactPhone    String?
+  idempotencyKey  String            @unique
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user     User?           @relation(fields: [userId], references: [id])
+  facility Facility        @relation(fields: [facilityId], references: [id])
+  vehicle  Vehicle?        @relation(fields: [vehicleId], references: [id])
+  event    Event?          @relation(fields: [eventId], references: [id])
+  session  ParkingSession?
+  payments Payment[]
+
+  @@unique([facilityId, code6, startsAt])
+  @@index([facilityId, startsAt])
+  @@index([userId, createdAt])
+  @@index([status, endsAt])
+  @@index([plate, facilityId])
+}
+
+model ParkingSession {
+  id              String        @id @default(cuid())
+  facilityId      String
+  reservationId   String?       @unique
+  userId          String?
+  plate           String
+  vehicleType     VehicleType   @default(AUTO)
+  source          SessionSource
+  status          SessionStatus @default(OPEN)
+  enteredAt       DateTime
+  exitedAt        DateTime?
+  amountCentavos  Int?
+  overstayCentavos Int?
+  /// MoneyLine[] del cobro final.
+  breakdown       Json?
+  chargeGroupId   String?
+  entryPhotoUrl   String?
+  contactPhone    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  facility    Facility     @relation(fields: [facilityId], references: [id])
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
+  user        User?        @relation(fields: [userId], references: [id])
+  chargeGroup ChargeGroup? @relation(fields: [chargeGroupId], references: [id])
+  gateEvents  GateEvent[]
+  payments    Payment[]
+
+  @@index([facilityId, status])
+  @@index([plate, facilityId, status])
+}
+
+model GateEvent {
+  id         String        @id @default(cuid())
+  /// Idempotencia: generado por el dispositivo.
+  eventId    String        @unique
+  facilityId String
+  sessionId  String?
+  deviceId   String?
+  type       GateEventType
+  method     GateMethod
+  offline    Boolean       @default(false)
+  deviceTs   DateTime
+  serverTs   DateTime      @default(now())
+  payload    Json?
+
+  facility Facility        @relation(fields: [facilityId], references: [id])
+  session  ParkingSession? @relation(fields: [sessionId], references: [id])
+  device   Device?         @relation(fields: [deviceId], references: [id])
+
+  @@index([facilityId, serverTs])
+}
+
+model Device {
+  id             String    @id @default(cuid())
+  facilityId     String
+  operatorUserId String?
+  name           String
+  platform       String?
+  model          String?
+  enrollmentCode String    @unique
+  /// Hash del token de dispositivo (Bearer). El token en claro solo se devuelve al enrolar.
+  tokenHash      String?   @unique
+  enrolledAt     DateTime?
+  lastSyncAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  facility     Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  operatorUser OperatorUser? @relation(fields: [operatorUserId], references: [id])
+  gateEvents   GateEvent[]
+
+  @@index([facilityId])
+}
+
+// ----------------------------------------------------------------------------
+// Dinero
+// ----------------------------------------------------------------------------
+
+/// Agrupa sesiones pequeñas (< Q20) de un usuario para cobrarlas en un solo cargo.
+model ChargeGroup {
+  id            String            @id @default(cuid())
+  userId        String
+  status        ChargeGroupStatus @default(OPEN)
+  totalCentavos Int               @default(0)
+  /// Se cobra al llegar a Q50 o en esta fecha, lo que ocurra primero.
+  cutoffAt      DateTime
+  chargedAt     DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id])
+  sessions ParkingSession[]
+  payments Payment[]
+
+  @@index([userId, status])
+  @@index([status, cutoffAt])
+}
+
+model Payment {
+  id              String            @id @default(cuid())
+  userId          String?
+  facilityId      String?
+  reservationId   String?
+  sessionId       String?
+  chargeGroupId   String?
+  paymentMethodId String?
+  provider        String
+  providerRef     String?
+  idempotencyKey  String            @unique
+  amountCentavos  Int
+  currency        String            @default("GTQ")
+  status          PaymentStatus     @default(PENDING)
+  method          PaymentMethodType
+  capturedAt      DateTime?
+  failureCode     String?
+  failureMessage  String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user          User?           @relation(fields: [userId], references: [id])
+  facility      Facility?       @relation(fields: [facilityId], references: [id])
+  reservation   Reservation?    @relation(fields: [reservationId], references: [id])
+  session       ParkingSession? @relation(fields: [sessionId], references: [id])
+  chargeGroup   ChargeGroup?    @relation(fields: [chargeGroupId], references: [id])
+  paymentMethod PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
+  refunds       Refund[]
+  invoices      Invoice[]
+  ledger        LedgerEntry[]
+
+  @@index([provider, providerRef])
+  @@index([status, createdAt])
+  @@index([reservationId])
+  @@index([sessionId])
+}
+
+model Refund {
+  id             String        @id @default(cuid())
+  paymentId      String
+  amountCentavos Int
+  reason         RefundReason
+  note           String?
+  providerRef    String?
+  status         PaymentStatus @default(PENDING)
+  idempotencyKey String        @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  payment Payment       @relation(fields: [paymentId], references: [id])
+  ledger  LedgerEntry[]
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  paymentId      String
+  issuer         InvoiceIssuer
+  operatorId     String?
+  certifier      String
+  felUuid        String?       @unique
+  serie          String?
+  numero         String?
+  receiverNit    String        @default("CF")
+  receiverName   String?
+  amountCentavos Int
+  ivaCentavos    Int
+  xmlUrl         String?
+  pdfUrl         String?
+  status         InvoiceStatus @default(PENDING)
+  attempts       Int           @default(0)
+  lastError      String?
+  issuedAt       DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  payment  Payment          @relation(fields: [paymentId], references: [id])
+  operator OperatorAccount? @relation(fields: [operatorId], references: [id])
+
+  @@index([status, attempts])
+  @@index([paymentId])
+}
+
+/// Partida doble simplificada: cada movimiento se registra como débito o crédito a una cuenta.
+model LedgerEntry {
+  id             String        @id @default(cuid())
+  paymentId      String?
+  refundId       String?
+  payoutId       String?
+  operatorId     String?
+  account        LedgerAccount
+  debitCentavos  Int           @default(0)
+  creditCentavos Int           @default(0)
+  memo           String?
+  createdAt      DateTime      @default(now())
+
+  payment  Payment?         @relation(fields: [paymentId], references: [id])
+  refund   Refund?          @relation(fields: [refundId], references: [id])
+  payout   Payout?          @relation(fields: [payoutId], references: [id])
+  operator OperatorAccount? @relation(fields: [operatorId], references: [id])
+
+  @@index([operatorId, createdAt])
+  @@index([account, createdAt])
+}
+
+model Payout {
+  id                  String       @id @default(cuid())
+  operatorId          String
+  periodStart         DateTime
+  periodEnd           DateTime
+  grossCentavos       Int
+  commissionCentavos  Int
+  gatewayFeesCentavos Int
+  netCentavos         Int
+  status              PayoutStatus @default(DRAFT)
+  statementUrl        String?
+  reference           String?
+  paidAt              DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  operator OperatorAccount @relation(fields: [operatorId], references: [id])
+  ledger   LedgerEntry[]
+
+  @@unique([operatorId, periodStart, periodEnd])
+}
+
+// ----------------------------------------------------------------------------
+// Infraestructura
+// ----------------------------------------------------------------------------
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  externalId  String
+  eventType   String
+  payload     Json
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+  error       String?
+
+  @@unique([provider, externalId])
+}
+
+model Notification {
+  id          String              @id @default(cuid())
+  userId      String?
+  channel     NotificationChannel
+  template    String
+  to          String
+  params      Json
+  status      NotificationStatus  @default(QUEUED)
+  providerRef String?
+  error       String?
+  createdAt   DateTime            @default(now())
+  sentAt      DateTime?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entity      String
+  entityId    String
+  before      Json?
+  after       Json?
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([entity, entityId])
+}
